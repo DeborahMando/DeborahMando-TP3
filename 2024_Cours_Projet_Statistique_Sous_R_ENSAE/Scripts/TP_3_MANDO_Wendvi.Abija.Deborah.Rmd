@@ -1,0 +1,305 @@
+---
+output:
+  pdf_document:
+    keep_tex: yes
+    fig_caption: yes
+    toc: no
+  word_document: default
+  html_document:
+    df_print: paged
+outp ut:
+  pdf_document:
+    toc: yes
+    fig_caption: yes
+    toc_depth: 4
+header-includes: 
+  - \usepackage{pdfpages}
+  - \usepackage{graphicx}
+---
+
+\includepdf{projet.pdf}
+
+```{=tex}
+\thispagestyle{empty}
+\newpage
+```
+```{=tex}
+\setcounter{tocdepth}{4}                
+\renewcommand{\contentsname}{\textcolor{blue}{Sommaire}}
+```
+\textcolor{blue}{\tableofcontents} \newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+
+```
+
+
+# Introduction
+
+Les représentations graphiques jouent un rôle crucial dans de nombreux domaines. Leur importance réside dans leur capacité à synthétiser et à visualiser des données.Les représentations graphiques facilitent l'analyse et l'interprétation des données  qui pourraient ne pas être immédiatement évidents dans des données brutes.
+Les représentations graphiques sont des outils puissants pour simplifier les analyses, faciliter la compréhension et stimuler l'engagement.
+Ainsi, pour notre étude, nous ferons d'abord la représentation graphique de la Croissance-annuelle du revenu national brut (Income growth and distribution (Gini Index)),ensuite celle de la Croissance démographique annuelle et enfin, nous ferons la representation du Gender inequality index.
+
+
+# Résumé
+
+L’objectif de ce projet est que vous appliquiez les outils que vous avez étudiés dans le cours du logiciel statistique R, dans le cas d’une étude de cas réelle. Le TP est à faire seul et à rendre au format .html ou .pdf. Les codes que vous utiliserez pour répondre aux questions seront à intégrer dans le corps de votre rapport. C’est pourquoi l’utilisation de R Markdown est à privilégier, mais vous pouvez également utiliser d’autres éditeurs de textes. . . En ce qui concerne l’organisation du travail à rendre, vous vous inspirerez de la façon dont est organisé le sujet du projet (vous n’êtes pas obliger de recopier l’énoncé). Le barème est indiqué en face de chaque question. Il tient compte du code proposé et dans le cas où nous vous demandons de faire des commentaires sur les résultats obtenus, nous tiendrons compte des commentaires que vous aurez fait dans la notation.
+
+
+# 1 Income growth and distribution 
+
+## 1.1 Préparation des données (Importation de bases)
+
+```{r}
+
+# Importation de la base annual-growth-in-gni-per-capita.CSV que nous avons nommée Base_annual-growth
+
+library(haven)
+ Base_growth <- read.csv("annual-growth-in-gni-per-capita.csv")
+ View(Base_growth)
+```
+
+
+## 1.2 Code pour la création des différents dataframes à partir de la base  Base_growth qui serviront à la représentation graphique de la Croissance-annuelle du revenu national brut (Income growth and distribution (Gini Index)) 
+
+
+```{r}
+#  Code pour la création des différents dataframes à partir de la base  Base_growth qui serviront à la représentation graphique de la Croissance-annuelle du revenu national brut (Income growth and distribution (Gini Index)) 
+# Commencons par regrouper les données suivant l'année de début grace à la fonction group_by
+# filtrer le Niger de la base Base_growth pour l'affecter à Niger_growth (qui est un dataframe)
+# Création de  Western_africa_growth(comme dataframe) aui recoit les différents pays de l'Afrique de l'Ouest filtrés de la base Base_growth
+# création World_growth qui recoit toute la base Base_growth( car la base a les données concernant les pays du monde,donc aucun besoin de filtrer,juste regrouper les données suivant l'année de début grace à la fonction group_by) 
+
+library(dplyr)
+
+Base_growth <- Base_growth %>%group_by(Start.Year)%>%mutate(moyenne_growth = mean(Value))
+Niger_growth <- Base_growth %>%filter(Region.Name =="Niger")
+
+Western_africa_growth  <-Base_growth %>%filter(Region.Name =="Benin"|Region.Name =="Burkina Faso"|Region.Name =="Côte d’Ivoire"|Region.Name =="Gambia"|Region.Name =="Ghana"|Region.Name =="Guinea"|Region.Name =="Guinea-Bissau"|Region.Name =="Cabo Verde"|Region.Name =="Liberia"|Region.Name =="Mali"|Region.Name =="Niger"|Region.Name =="Nigeria"|Region.Name =="Senegal"|Region.Name =="Sierra Leone"|Region.Name =="Togo")
+#View(Western_africa_growth)
+
+Western_africa_growth <- Western_africa_growth  %>%group_by(Start.Year )%>%mutate(moyenne_growth = mean(Value))
+World_growth <- Base_growth %>%group_by(Start.Year )%>%mutate(moyenne_growth = mean(Value))
+
+# pour voir les différents dataframes créés
+
+#View(Niger_growth)
+#View(Western_africa_growth)
+#View(World_growth)
+```
+
+##  1.3 Code pour la représentation graphique de la Croissance-annuelle du revenu national brut (Income growth and distribution (Gini Index)) & Figure 1 : Income growth and distribution (Gini Index) / Croissance-annuelle du revenu national brut
+
+
+```{r}
+library(ggplot2)
+
+ # Code pour la représentation graphique de la Croissance-annuelle du revenu national brut (Income growth and distribution (Gini Index))
+
+# pour représenter d'abord les différents graphiques  puis les ramener à un seul graphique
+
+# Création du graphique avec ggplot
+ggplot()+
+  geom_line(Niger_growth,mapping=aes(x = Start.Year, y = Value),color = "#4169E1", size = 0.75) + 
+  geom_point(Niger_growth,mapping=aes(x = Start.Year, y = Value,color = "Niger"), size = 2) + 
+  geom_line(Western_africa_growth,mapping=aes(x = Start.Year, y = moyenne_growth),color = "#8B8682", size = 0.75) + 
+  geom_point(Western_africa_growth,mapping=aes(x = Start.Year, y = moyenne_growth,color = "Western Africa"), size = 2) + 
+  geom_line(World_growth,mapping=aes(x = Start.Year, y = moyenne_growth),color = "#D3D3D3", size = 0.75) + 
+  geom_point(World_growth,mapping=aes(x = Start.Year, y = moyenne_growth,color = "World"), size = 2) + 
+    labs(title = "Figure : Income growth and distribution (Gini Index)", x = "", y = "",color="",caption = "Source : World Bank")+
+    scale_x_continuous(breaks = seq(1970, 2020, by=10)) + # Intervalles sur l'axe des abscisses
+    scale_y_continuous(breaks = seq(-16, 8, by=6),limits = c(-16,10))+# Intervalles sur l'axe des ordonnées
+    scale_color_manual(values=c("Niger"="#4169E1","Western Africa"="#8B8682","World"="#D3D3D3"),labels=c("Niger","Western Africa","World"))+
+ # Intervalles sur l'axe des ordonnées
+  #theme_minimal()+ # Thème du graphique
+  theme(
+    text = element_text(size = 9),  # Modifie la taille du texte
+    panel.grid.major.x = element_line(color = "gray", linetype = "solid",size = 0.5),  # Modifie les lignes de grille principales(verticale)
+    panel.grid.major.y = element_line(color = "gray", linetype = "dashed",size = 0.5),  # Modifie les lignes de grille principales(horizontale)
+    panel.background = element_rect(fill = "white"),# Modifie la couleur de fond du panneau
+    legend.position="top",legend.justification="left",plot.caption = element_text(hjust = 0) # pour ramener la source à gauche
+  ) 
+
+  
+
+```
+
+
+## 1.4 Commentaire sur Income growth and distribution (Gini Index)
+
+Le graphique ci dessus représentant en moyenne,les pays du monde entier ont connu une Croissance-annuelle du revenu national brut (le Niger y compris) meme si cette croissance n'est pas linéaire.
+En moyenne la croissance-annuelle du revenu national brut de l'Afrique de l'OUest semble etre plus élevée que celle du monde .  
+Le Niger lui connait une croissance-annuelle (du revenu national brut) instable sur la période 1990-2020. Il a  en moyenne une croissance plus faible que celle de la croissance moyenne des pays de l'Afrique de l'OUest et du monde.
+
+# 2 Croissance démographique annuelle
+
+## 2.1 Préparation des données 2 (Importation de bases)
+
+```{r}
+
+# Importation de la base population-growth-annual.csv de  que nous avons nommée Base_population-growth-annual
+
+library(haven)
+ Base_pop <- read.csv("population-growth-annual.csv")
+ View(Base_pop)
+```
+
+
+## 2.2 Code pour la création des différents dataframes à partir de la base Base_pop qui serviront àla représentation graphique de croissance démographique annuelle (Annual population growth (%))
+
+
+```{r}
+# Code pour la création des différents dataframes à partir de la base Base_pop qui serviront àla représentation graphique de croissance démographique annuelle (Annual population growth (%))
+# Commencons par regrouper les données suivant l'année de début grace à la fonction group_by
+# filtrer le Niger de la base Base_pop pour l'affecter à Niger_pop (qui est un dataframe)
+# Création de  Western_africa_pop(comme dataframe) aui recoit les différents pays de l'Afrique de l'Ouest filtrés de la base Base_pop
+# création World_pop qui recoit toute la base Base_gender( car la base a les données concernant les pays du monde,donc aucun besoin de filtrer,juste regrouper les données suivant l'année de début grace à la fonction group_by) 
+
+Base_pop <- Base_pop %>% group_by(Start.Year)%>%mutate(moyenne_pop = mean(Value))
+Niger_pop <- Base_pop %>%filter(Region.Name =="Niger")
+
+Western_africa_pop <- Base_pop %>%filter(Region.Name =="Benin"|Region.Name =="Burkina Faso"|Region.Name =="Côte d’Ivoire"|Region.Name =="Gambia"|Region.Name =="Ghana"|Region.Name =="Guinea"|Region.Name =="Guinea-Bissau"|Region.Name =="Cabo Verde"|Region.Name =="Liberia"|Region.Name =="Mali"|Region.Name =="Niger"|Region.Name =="Nigeria"|Region.Name =="Senegal"|Region.Name =="Sierra Leone"|Region.Name =="Togo")
+#View(Western_africa_pop)
+Western_africa_pop <- Western_africa_pop  %>%group_by(Start.Year )%>%mutate(moyenne_growth = mean(Value))
+World_pop <- Base_pop %>%group_by(Start.Year )%>%mutate(moyenne_growth = mean(Value))
+
+# pour voir les différents dataframes créés
+
+#View(Niger_pop)
+#View(Western_africa_pop)
+#View(World_pop)
+```
+
+
+## 2.3 Code pour la représentation graphique de croissance démographique annuelle (Annual population growth (%)) & Figure 2 : Annual population growth (%)/ Croissance démographique annuelle
+
+```{r}
+# Code pour la représentation graphique de croissance démographique annuelle (Annual population growth (%))
+# Création du graphique avec ggplot
+# pour représenter d'abord les différents graphiques puis les ramener à un seul graphique
+ggplot()+
+  geom_line(Niger_pop,mapping=aes(x = Start.Year, y = Value),color = "#4169E1", size = 0.75) + 
+  geom_point(Niger_pop,mapping=aes(x = Start.Year, y = Value,color = "Niger"), size = 2) + 
+  geom_line(Western_africa_pop,mapping=aes(x = Start.Year, y = moyenne_growth),color = "#8B8682", size = 0.75) + 
+  geom_point(Western_africa_pop,mapping=aes(x = Start.Year, y = moyenne_growth,color = "Western Africa"), size = 2) + 
+  geom_line(World_pop,mapping=aes(x = Start.Year, y = moyenne_growth),color = "#D3D3D3", size = 0.75) + 
+  geom_point(World_pop,mapping=aes(x = Start.Year, y = moyenne_growth,color = "World"), size = 2) + 
+    labs(title = "Figure : Annual population growth (%)", x = "", y = "",color="",caption = "Source : World Bank")+
+    scale_x_continuous(breaks = seq(1960, 2020, by=10)) + # Intervalles sur l'axe des abscisses
+    scale_y_continuous(breaks = seq(1, 4, by=1),limits = c(1,4))+# Intervalles sur l'axe des ordonnées
+    scale_color_manual(values=c("Niger"="#4169E1","Western Africa"="#8B8682","World"="#D3D3D3"),labels=c("Niger","Western Africa","World"))+
+ # code pour la mise en forme générale du graphique
+  theme(
+    text = element_text(size = 9),  # Modifie la taille du texte
+    panel.grid.major.x = element_line(color = "gray", linetype = "solid",size = 0.5),  # Modifie les lignes de grille principales(Verticale)
+    panel.grid.major.y = element_line(color = "gray", linetype = "dashed",size = 0.5),  # Modifie les lignes de grille principales(horizontale)
+    panel.background = element_rect(fill = "white"),# Modifie la couleur de fond du panneau
+    legend.position="top",legend.justification="left",plot.caption = element_text(hjust = 0) # pour ramener la source à gauche
+  )
+
+
+```
+
+## 2.4 Commentaire sur Annual population growth (%)/ Croissance démographique annuelle
+
+Le graphique représentant la Croissance démographique annuelle du Niger, de l'Afrique de l'Ouest et du monde montre au cours de la période 1970-2020 une plus forte croissance  de la population Nigérienne suivie par celle de l'Afrique de l'Ouest qui connait une faible croissance. La population mondiale quant à elle a connut une décroissance . 
+En se référant au graphique; nous pouvons affirmer que le Niger connait une plus grande croissance démographique comparativement à la moyenne de celle de l'Afrique de l'Ouest et du monde. 
+
+# 3 Gender inequality index
+
+## 3.1 Préparation des données 3 (Importation de bases)
+
+```{r}
+
+# Importation de la base gender-inequality-index.csv que nous avons nommée Base_gender-inequality-index
+
+library(haven)
+Base_gender <- read.csv("gender-inequality-index.csv")
+#View(Base_gender)
+```
+
+
+## 3.2 Code pour pour la création des différents dataframes à partir de la base Base_gender qui serviront àla représentation graphique de Gender inequality index
+
+
+```{r}
+#   Code pour pour la création des différents dataframes à partir de la base Base_gender qui serviront àla représentation graphique de Gender inequality index
+
+# Commencons par regrouper les données suivant l'année de début grace à la fonction group_by
+# filtrer le Niger de la baseBase_gender pour l'affecter à Niger_gender(qui est un dataframe)
+# Création de  Western_africa_gender(comme dataframe) aui recoit les différents pays de l'Afrique de l'Ouest filtrés de la base Base_gender
+# création World_gender qui recoit toute la base Base_gender( car la base a les données concernant les pays du monde,donc aucun besoin de filtrer,juste regrouper les données suivant l'année de début grace à la fonction group_by) 
+library(dplyr)
+Base_gender <- Base_gender %>%group_by(Start.Year)%>%mutate(moyenne_pop = mean(Value))
+Niger_gender <- Base_gender %>%filter(Region.Name =="Niger")
+Western_africa_gender <- Base_gender %>%filter(Region.Name =="Benin"|Region.Name =="Burkina Faso"|Region.Name =="Côte d’Ivoire"|Region.Name =="Gambia"|Region.Name =="Ghana"|Region.Name =="Guinea"|Region.Name =="Guinea-Bissau"|Region.Name =="Cabo Verde"|Region.Name =="Liberia"|Region.Name =="Mali"|Region.Name =="Niger"|Region.Name =="Nigeria"|Region.Name =="Senegal"|Region.Name =="Sierra Leone"|Region.Name =="Togo")
+
+#View(Western_africa_gender)
+
+Western_africa_gender <- Western_africa_gender  %>%group_by(Start.Year )%>%mutate(moyenne_growth = mean(Value))
+World_gender <- Base_gender %>%group_by(Start.Year )%>%mutate(moyenne_growth = mean(Value))
+# pour voir les différents dataframes créés
+#View(Niger_gender)
+#View(Western_africa_gender)
+#View(World_gender)
+
+```
+
+
+## 3.3 Code pour la représentation graphique de Gender inequality index/ indice d'inégalité du genre / Figure 3 : Gender inequality index/ indice d'inégalité du genre
+
+```{r}
+# Code pour la représentation graphique de Gender inequality index
+
+# pour représenter d'abord les différents graphiques
+# Création du graphique avec ggplot
+# pour représenter d'abord les différents graphiques puis les ramener à un seul graphique
+library(ggplot2)
+ggplot()+
+  geom_line(Niger_gender,mapping=aes(x = Start.Year, y = Value),color = "#4169E1", size = 0.75) + 
+  geom_point(Niger_gender,mapping=aes(x = Start.Year, y = Value,color = "Niger"), size = 2) + 
+  geom_line(Western_africa_gender,mapping=aes(x = Start.Year, y = moyenne_growth),color = "#8B8682", size = 0.75) + 
+  geom_point(Western_africa_gender,mapping=aes(x = Start.Year, y = moyenne_growth,color = "Western Africa"), size = 2) + 
+  geom_line(World_gender,mapping=aes(x = Start.Year, y = moyenne_growth),color = "#D3D3D3", size = 0.75) + 
+  geom_point(World_gender,mapping=aes(x = Start.Year, y = moyenne_growth,color = "World"), size = 2) + 
+    labs(title = "Figure : Gender inequality index", x = "", y = "",color="",caption = "Source : UNDP")+
+    scale_x_continuous(breaks = seq(1990, 2020, by=10)) + # Intervalles sur l'axe des abscisses
+    scale_y_continuous(breaks = seq(0.2, 0.8, by=0.2),limits = c(0.2,0.8))+# Intervalles sur l'axe des ordonnées
+    scale_color_manual(values=c("Niger"="#4169E1","Western Africa"="#8B8682","World"="#D3D3D3"),labels=c("Niger","Western Africa","World"))+
+ # code pour la mise en forme générale du graphique
+  theme(
+    text = element_text(size = 9),  # Modifie la taille du texte
+    panel.grid.major.x = element_line(color = "gray", linetype = "solid",size = 0.5),  # Modifie les lignes de grille principales(verticale)
+    panel.grid.major.y = element_line(color = "gray", linetype = "dashed",size = 0.5),  # Modifie les lignes de grille principales(horizontale)
+    panel.background = element_rect(fill = "white"),# Modifie la couleur de fond du panneau
+    legend.position="top",legend.justification="left",plot.caption = element_text(hjust = 0) # pour ramener la source à gauche
+  ) +
+  annotate("text", x = 2002.2,  y = 0.483, label = "World:0.4")# pour resortir le point ayant x = 2002.2 comme abscisse et y = 0.4 comme ordonnée
+
+```
+
+## 3.4 Commentaire sur Gender inequality index
+
+Le graphique représentant l'indice d'inégalité du genre du Niger, de l'Afrique de l'Ouest et du monde montre au cours de la période 1970-2020 montre que ce indice au niveau mondiale a connu une plus grande baisse que l'indice d'inégalité du genre du Niger, de l'Afrique de l'Ouest. 
+L'indice d'inégalité du genre du Niger, comparativement à la moyenne de l'indice d'inégalité du genre de l'Afrique de l'Ouest et du monde  est resté le plus élevé  au cours de la période 1990-2020.   
+
+
+# Conclusion  
+
+Au terme de notre étude, il ressort que les représentations graphiques facilitent la compréhension des données brutes ainsi que leur interprétation.Ces graphiaues nous ont permis de suivre les évolutions respectives de la croissance economique ;de la population et de l'indice d'inégalité du genre du Niger; de l'Afrique de l'Ouest et du monde suivant respectivement les annéés 1970-2020,1960-2020 et 1990-2020. Les représentation graphiques ci-dessus révèlent que de manière générale:
+Il ressort de ses graphiques que:
+D'abord, la croissance-annuelle du revenu national brut en générale est instable au cours de la période et en moyenne le Niger a une croissance plus faible que celle de la croissance economique  moyenne des pays de l'Afrique de l'OUest et du monde.
+Ensuite le Niger connait une plus grande croissance démographique comparativement à la moyenne de celle de l'Afrique de l'Ouest et du monde. 
+Enfin,l'inégalité liée au genre est plus élevé au Niger, que l'inégalité liée au genre en Afrique de l'Ouest et dans le monde en moyenne meme si cette inégalité connait une baisse.
+
+
+
+
+
+
+
